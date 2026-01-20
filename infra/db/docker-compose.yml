@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ctp_postgres
+    environment:
+      POSTGRES_USER: ctp
+      POSTGRES_PASSWORD: ctp
+      POSTGRES_DB: ctp
+    ports:
+      - "5432:5432"
+    volumes:
+      - ctp_pgdata:/var/lib/postgresql/data
+volumes:
+  ctp_pgdata:

@@ -1,3 +1,12 @@
+/*
+Simulated deltas for event_0001
+
+Phase 2 wiring test
+Uses the same mechanics as Phase 1:
+  HS_A delta = 0.25 * import_value_usd
+  propagation distributes delta equally across outgoing supplier edges
+*/
+
 COPY (
   WITH
   direct_delta AS (
@@ -29,9 +38,8 @@ COPY (
     FROM direct_delta d
     WHERE d.direct_delta_usd <> 0
   ),
-  rec AS (
-    WITH RECURSIVE walk AS (
-      -- columns: root, current_node, from, to, depth, delta
+  walk AS (
+    WITH RECURSIVE w AS (
       SELECT
         s.path_root_firm_id,
         s.current_node_id,
@@ -50,22 +58,28 @@ COPY (
         e.supplier_firm_id AS to_supplier_id,
         w.depth + 1 AS depth,
         (w.propagated_delta_usd / od.out_deg) AS propagated_delta_usd
-      FROM walk w
-      JOIN phase1_edges e
-        ON e.buyer_firm_id = w.current_node_id
-      JOIN out_degree od
-        ON od.firm_id = w.current_node_id
+      FROM w
+      JOIN phase1_edges e ON e.buyer_firm_id = w.current_node_id
+      JOIN out_degree od ON od.firm_id = w.current_node_id
       WHERE w.depth < 4
     )
+    SELECT * FROM w
+  ),
+  incoming AS (
     SELECT
-      path_root_firm_id,
-      from_firm_id,
-      to_supplier_id,
-      depth,
-      propagated_delta_usd
+      to_supplier_id AS firm_id,
+      SUM(propagated_delta_usd) AS incoming_delta_usd
     FROM walk
+    WHERE depth >= 1 AND to_supplier_id IS NOT NULL
+    GROUP BY to_supplier_id
   )
-  SELECT *
-  FROM rec
-  ORDER BY path_root_firm_id, depth, from_firm_id, to_supplier_id
+  SELECT
+    f.firm_id,
+    COALESCE(d.direct_delta_usd, 0) AS direct_delta_usd,
+    COALESCE(i.incoming_delta_usd, 0) AS incoming_delta_usd,
+    (COALESCE(d.direct_delta_usd, 0) + COALESCE(i.incoming_delta_usd, 0)) AS simulated_delta_usd
+  FROM phase1_firms f
+  LEFT JOIN direct_delta d ON d.firm_id = f.firm_id
+  LEFT JOIN incoming i ON i.firm_id = f.firm_id
+  ORDER BY f.firm_id
 ) TO STDOUT WITH CSV HEADER;
