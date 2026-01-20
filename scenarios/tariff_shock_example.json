@@ -1,0 +1,16 @@
+{
+  "scenario_id": "phase1_shock_hs_a_plus_25pct",
+  "description": "Phase 1 synthetic shock: increase effective cost for HS_A exposures by 25 percent.",
+  "held_fixed": [
+    "phase1_firms",
+    "phase1_edges",
+    "supplier_edges",
+    "firm_hs_exposure"
+  ],
+  "shock": {
+    "type": "hs_code_multiplier",
+    "targets": [
+      { "hs_code": "HS_A", "multiplier": 1.25 }
+    ]
+  }
+}

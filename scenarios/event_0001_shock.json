@@ -1,0 +1,18 @@
+{
+  "event_id": "event_0001",
+  "event_name": "Phase 2 wiring test event",
+  "event_start_date": "2018-07-06",
+  "event_end_date": "2018-10-01",
+  "hs_scope": ["HS_A"],
+  "shock_mapping": {
+    "type": "hs_code_multiplier",
+    "targets": [
+      { "hs_code": "HS_A", "multiplier": 1.25 }
+    ]
+  },
+  "evaluation_windows": {
+    "pre_event_window_periods": 1,
+    "post_event_window_periods": 1
+  },
+  "notes": "This is a wiring test manifest using the same HS_A multiplier as Phase 1. Replace with a real event once real tariff and outcome data is loaded."
+}
