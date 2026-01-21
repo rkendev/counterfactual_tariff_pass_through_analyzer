@@ -1,0 +1,81 @@
+{
+  "event_id": "event_0002",
+  "event_status": "TEMPLATE_ONLY_DO_NOT_RUN",
+
+  "event_name": "REQUIRED real tariff event name",
+  "authoritative_source": "REQUIRED citation or public document reference",
+  "documentation_link": "REQUIRED url or archive reference",
+
+  "event_dates": {
+    "event_start_date": "REQUIRED YYYY-MM-DD",
+    "event_end_date": "REQUIRED YYYY-MM-DD OR null if open ended"
+  },
+
+  "hs_scope": {
+    "hs_digit_level": "REQUIRED numeric value",
+    "affected_hs_codes": [
+      "REQUIRED at least one HS code"
+    ],
+    "hs_scope_source": "REQUIRED documentation of HS scope",
+    "hs_scope_validation": "REQUIRED explanation of why this HS list is complete"
+  },
+
+  "shock_mapping": {
+    "mapping_type": "hs_code_multiplier",
+    "mapping_rule": "REQUIRED explicit rule mapping tariff change to cost multiplier",
+    "targets": [
+      {
+        "hs_code": "REQUIRED",
+        "multiplier": "REQUIRED numeric value"
+      }
+    ],
+    "justification": "REQUIRED explanation of why this mapping is defensible"
+  },
+
+  "firm_exposure_requirements": {
+    "exposure_proxy_type": "REQUIRED import value trade share or cost proxy",
+    "exposure_data_source": "REQUIRED data source reference",
+    "coverage_statement": "REQUIRED statement on fraction of firms with nonzero exposure",
+    "rejection_check": "FAIL if meaningful fraction of firms have zero exposure"
+  },
+
+  "supplier_graph_requirements": {
+    "graph_source": "REQUIRED data source reference",
+    "minimum_depth": "REQUIRED integer",
+    "connectivity_statement": "REQUIRED explanation of why propagation is possible",
+    "rejection_check": "FAIL if exposed firms are isolated nodes"
+  },
+
+  "observed_outcome_requirements": {
+    "outcome_proxy": "REQUIRED margin proxy definition",
+    "measurement_window": {
+      "pre_event_periods": "REQUIRED integer",
+      "post_event_periods": "REQUIRED integer"
+    },
+    "sign_mapping_rule": "REQUIRED deterministic rule mapping raw outcome to sign",
+    "rejection_check": "FAIL if outcome proxy is missing or ambiguous"
+  },
+
+  "sample_size_requirements": {
+    "minimum_firms_in_S": 5,
+    "minimum_upstream_paths": 2,
+    "rejection_check": "FAIL if thresholds are not met"
+  },
+
+  "pre_execution_checklist": {
+    "hs_scope_complete": false,
+    "firm_exposure_verified": false,
+    "supplier_graph_verified": false,
+    "observed_outcomes_verified": false,
+    "sample_size_verified": false,
+    "all_checks_passed": false
+  },
+
+  "execution_guardrail": {
+    "allow_execution": false,
+    "override_prohibited": true,
+    "reason": "This template must not be executed until all pre execution checks are true"
+  },
+
+  "notes": "This file is a template only. It exists to enforce event selection discipline. Execution is forbidden until every REQUIRED field is filled and all pre execution checks are true."
+}
