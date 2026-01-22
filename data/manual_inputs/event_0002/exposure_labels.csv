@@ -1,0 +1,6 @@
+event_id,firm_id,exposed_flag,exposure_bucket,evidence_note
+event_0002,AAPL,0,,pending review: add filing quote and period
+event_0002,CSCO,0,,pending review: add filing quote and period
+event_0002,DELL,0,,pending review: add filing quote and period
+event_0002,HPQ,0,,pending review: add filing quote and period
+event_0002,QCOM,0,,pending review: add filing quote and period
