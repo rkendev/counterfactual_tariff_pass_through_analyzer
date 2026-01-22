@@ -2,71 +2,64 @@
   "event_id": "event_0002",
   "event_status": "TEMPLATE_ONLY_DO_NOT_RUN",
 
-  "event_name": "REQUIRED real tariff event name",
-  "authoritative_source": "REQUIRED citation or public document reference",
-  "documentation_link": "REQUIRED url or archive reference",
+  "event_name": "US Section 301 tariffs on Chinese goods List 1",
+  "authority": "United States Trade Representative",
+  "announcement_date": "2018-06-15",
+  "enforcement_date": "2018-07-06",
+  "event_end_date": null,
 
-  "event_dates": {
-    "event_start_date": "REQUIRED YYYY-MM-DD",
-    "event_end_date": "REQUIRED YYYY-MM-DD OR null if open ended"
-  },
-
+  "authoritative_source_note": "REQUIRED citation reference for List 1 publication and enforcement date",
   "hs_scope": {
-    "hs_digit_level": "REQUIRED numeric value",
-    "affected_hs_codes": [
-      "REQUIRED at least one HS code"
-    ],
-    "hs_scope_source": "REQUIRED documentation of HS scope",
-    "hs_scope_validation": "REQUIRED explanation of why this HS list is complete"
+    "hs_digit_level": 8,
+    "affected_hs_codes": [],
+    "hs_scope_source_note": "REQUIRED description of where the HS list comes from and how it was obtained",
+    "hs_scope_validation_note": "REQUIRED statement about completeness and digit level consistency"
   },
 
   "shock_mapping": {
     "mapping_type": "hs_code_multiplier",
-    "mapping_rule": "REQUIRED explicit rule mapping tariff change to cost multiplier",
     "targets": [
       {
         "hs_code": "REQUIRED",
-        "multiplier": "REQUIRED numeric value"
+        "multiplier": "REQUIRED"
       }
     ],
-    "justification": "REQUIRED explanation of why this mapping is defensible"
+    "mapping_rule_note": "REQUIRED explicit rule from tariff rate change to multiplier, for List 1 typically 1.25",
+    "justification_note": "REQUIRED explanation of why this mapping is defensible for this event"
   },
 
-  "firm_exposure_requirements": {
-    "exposure_proxy_type": "REQUIRED import value trade share or cost proxy",
-    "exposure_data_source": "REQUIRED data source reference",
-    "coverage_statement": "REQUIRED statement on fraction of firms with nonzero exposure",
-    "rejection_check": "FAIL if meaningful fraction of firms have zero exposure"
+  "firm_exposure": {
+    "proxy_definition_doc": "docs/exposure_proxy_definition.md",
+    "exposure_encoding": "binary_or_bucket",
+    "exposure_data_source_note": "REQUIRED describe which filings or dataset provide exposure labeling",
+    "coverage_statement_note": "REQUIRED expected fraction of firms with exposed equals 1"
   },
 
-  "supplier_graph_requirements": {
-    "graph_source": "REQUIRED data source reference",
-    "minimum_depth": "REQUIRED integer",
-    "connectivity_statement": "REQUIRED explanation of why propagation is possible",
-    "rejection_check": "FAIL if exposed firms are isolated nodes"
-  },
-
-  "observed_outcome_requirements": {
-    "outcome_proxy": "REQUIRED margin proxy definition",
-    "measurement_window": {
-      "pre_event_periods": "REQUIRED integer",
-      "post_event_periods": "REQUIRED integer"
+  "observed_outcome": {
+    "proxy_type": "gross_margin_sign",
+    "pre_window": {
+      "period_type": "quarter",
+      "periods": 1
     },
-    "sign_mapping_rule": "REQUIRED deterministic rule mapping raw outcome to sign",
-    "rejection_check": "FAIL if outcome proxy is missing or ambiguous"
+    "post_window": {
+      "period_type": "quarter",
+      "periods": 1
+    },
+    "window_definition_note": "REQUIRED specify which quarters define pre and post relative to enforcement_date",
+    "sign_mapping_rule_note": "REQUIRED deterministic rule from gross margin values to margin_change_sign"
   },
 
   "sample_size_requirements": {
     "minimum_firms_in_S": 5,
-    "minimum_upstream_paths": 2,
-    "rejection_check": "FAIL if thresholds are not met"
+    "minimum_upstream_paths": 2
   },
 
   "pre_execution_checklist": {
     "hs_scope_complete": false,
-    "firm_exposure_verified": false,
+    "shock_mapping_complete": false,
+    "exposure_labels_loaded": false,
+    "observed_outcomes_loaded": false,
     "supplier_graph_verified": false,
-    "observed_outcomes_verified": false,
     "sample_size_verified": false,
     "all_checks_passed": false
   },
@@ -74,8 +67,6 @@
   "execution_guardrail": {
     "allow_execution": false,
     "override_prohibited": true,
-    "reason": "This template must not be executed until all pre execution checks are true"
-  },
-
-  "notes": "This file is a template only. It exists to enforce event selection discipline. Execution is forbidden until every REQUIRED field is filled and all pre execution checks are true."
+    "reason": "Template must not be executed until all pre execution checks are true"
+  }
 }

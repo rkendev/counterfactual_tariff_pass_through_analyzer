@@ -171,3 +171,21 @@ During Phase 2:
 
 If the backtest fails, the correct action is to document the failure and decide whether to stop or to proceed to Phase 3 multi event testing with a precommitted change proposal.
 
+## Observed outcome mapping for real events
+
+Observed outcome proxy is gross margin.
+
+gross_margin is (revenue minus cost_of_goods_sold) divided by revenue.
+
+Pre window is the quarter immediately before the enforcement date.
+Post window is the quarter immediately after the enforcement date.
+
+margin_change is gross_margin_post minus gross_margin_pre.
+
+margin_change_sign is:
+-1 if margin_change < 0
+0 if margin_change = 0
++1 if margin_change > 0
+
+No thresholds, smoothing, or discretionary adjustments are permitted.
+
