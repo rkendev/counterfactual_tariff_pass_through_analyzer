@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import csv
 from dataclasses import dataclass
 from pathlib import Path
@@ -95,7 +96,7 @@ def compute_metrics(
 
 
 def main() -> None:
-    event_id = "event_0001"
+    event_id = os.getenv("EVENT_ID", "event_0001")
     alpha = 0.0
 
     out_dir = Path("outputs") / event_id
