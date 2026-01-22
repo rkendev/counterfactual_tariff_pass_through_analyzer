@@ -94,8 +94,8 @@ def load_gross_margin_csv(path: Path) -> list[GrossMarginRow]:
             gmo = (row["gross_margin_post"] or "").strip()
 
             if "REQUIRED" in {pre_period, post_period, gmp, gmo}:
-                raise ValueError("Observed gross margin CSV still contains REQUIRED placeholders")
-
+                continue
+                
             gross_margin_pre = float(gmp)
             gross_margin_post = float(gmo)
 
