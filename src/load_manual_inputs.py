@@ -96,8 +96,15 @@ def load_gross_margin_csv(path: Path) -> list[GrossMarginRow]:
             if "REQUIRED" in {pre_period, post_period, gmp, gmo}:
                 continue
                 
-            gross_margin_pre = float(gmp)
-            gross_margin_post = float(gmo)
+            try:
+                gross_margin_pre = float(gmp)
+                gross_margin_post = float(gmo)
+            except ValueError:
+                print(
+                    f"Skipping firm {firm_id}: non-numeric gross margin values "
+                    f"(pre={gmp}, post={gmo})"
+                )
+                continue
 
             if event_id == "" or firm_id == "":
                 raise ValueError("Observed gross margin CSV contains empty event_id or firm_id")
