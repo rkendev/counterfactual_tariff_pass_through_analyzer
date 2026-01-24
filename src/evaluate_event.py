@@ -5,7 +5,7 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from mapping import sign_from_cost_delta
+from mapping import predicted_margin_sign
 
 
 @dataclass(frozen=True)
@@ -53,9 +53,47 @@ def load_observed(path: Path) -> dict[str, int]:
     return out
 
 
+def _find_firm_profile_file(base: Path) -> Path | None:
+    candidates = [
+        base / "firm_profile.csv",
+        base / "firm_profiles.csv",
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
+
+
+def load_firm_profiles(event_id: str) -> dict[str, str]:
+    """
+    Loads firm profiles from manual inputs if present.
+    If the file does not exist, return empty dict and no gating is applied.
+    """
+    base = Path("data") / "manual_inputs" / event_id
+    p = _find_firm_profile_file(base)
+    if p is None:
+        return {}
+
+    out: dict[str, str] = {}
+    with p.open(newline="", encoding="utf-8") as f:
+        r = csv.DictReader(f)
+        required = {"event_id", "firm_id", "firm_profile", "evidence_note"}
+        missing = required - set(r.fieldnames or [])
+        if missing:
+            raise ValueError(f"Firm profile CSV missing columns: {sorted(missing)}")
+
+        for row in r:
+            firm_id = (row["firm_id"] or "").strip()
+            profile = (row["firm_profile"] or "").strip()
+            if firm_id and profile:
+                out[firm_id] = profile
+    return out
+
+
 def compute_metrics(
     components: dict[str, dict[str, float]],
     observed: dict[str, int],
+    firm_profiles: dict[str, str],
     alpha: float,
 ) -> Metrics:
     rows = []
@@ -68,27 +106,37 @@ def compute_metrics(
         simulated_delta = c["simulated"]
         direct_delta = c["direct"]
 
-        predicted_sign = sign_from_cost_delta(simulated_delta, alpha)
-        comparator_sign = sign_from_cost_delta(direct_delta, alpha)
+        profile = firm_profiles.get(firm)
 
-        rows.append((firm, simulated_delta, direct_delta, predicted_sign, comparator_sign, obs_sign))
+        predicted_sign = predicted_margin_sign(simulated_delta, alpha, profile)
+        comparator_sign = predicted_margin_sign(direct_delta, alpha, profile)
 
-    in_scope = [r for r in rows if r[5] in (-1, 1)]
+        rows.append((firm, simulated_delta, direct_delta, predicted_sign, comparator_sign, obs_sign, profile))
+
+    def in_scope_row(r: tuple[str, float, float, int, int, int, str | None]) -> bool:
+        _, sim_d, _, _, _, obs_s, profile = r
+        if obs_s not in (-1, 1):
+            return False
+        if profile == "ip_licensing_dominated":
+            return False
+        return True
+
+    in_scope = [r for r in rows if in_scope_row(r)]
     n = len(in_scope)
     if n == 0:
         return Metrics(0, 0.0, 0.0, 0.0, 0.0, False)
 
-    matches = sum(1 for (_, _, _, pred_s, _, obs_s) in in_scope if pred_s == obs_s)
+    matches = sum(1 for (_, _, _, pred_s, _, obs_s, _) in in_scope if pred_s == obs_s)
     accuracy = matches / n
 
     baseline_sign = 1
-    baseline_matches = sum(1 for (_, _, _, _, _, obs_s) in in_scope if baseline_sign == obs_s)
+    baseline_matches = sum(1 for (_, _, _, _, _, obs_s, _) in in_scope if baseline_sign == obs_s)
     baseline_accuracy = baseline_matches / n
 
-    comparator_matches = sum(1 for (_, _, _, _, comp_s, obs_s) in in_scope if comp_s == obs_s)
+    comparator_matches = sum(1 for (_, _, _, _, comp_s, obs_s, _) in in_scope if comp_s == obs_s)
     comparator_accuracy = comparator_matches / n
 
-    covered = sum(1 for (_, sim_d, _, _, _, _) in in_scope if sim_d != 0.0)
+    covered = sum(1 for (_, sim_d, _, _, _, _, _) in in_scope if sim_d != 0.0)
     coverage = covered / n
 
     passed = accuracy > baseline_accuracy
@@ -113,8 +161,9 @@ def main() -> None:
 
     components = load_components(components_path)
     observed = load_observed(observed_path)
+    firm_profiles = load_firm_profiles(event_id)
 
-    metrics = compute_metrics(components, observed, alpha)
+    metrics = compute_metrics(components, observed, firm_profiles, alpha)
 
     results_path = out_dir / "backtest_results.csv"
     with results_path.open("w", newline="", encoding="utf-8") as f:
@@ -122,6 +171,7 @@ def main() -> None:
         w.writerow(
             [
                 "firm_id",
+                "firm_profile",
                 "direct_delta_usd",
                 "incoming_delta_usd",
                 "simulated_delta_usd",
@@ -130,21 +180,28 @@ def main() -> None:
                 "comparator_margin_sign_direct_only",
                 "observed_margin_change_sign",
                 "match_flag",
+                "in_scope_S",
             ]
         )
 
         for firm_id in sorted(observed.keys()):
             obs_s = observed[firm_id]
             c = components.get(firm_id, {"direct": 0.0, "incoming": 0.0, "simulated": 0.0})
+            profile = firm_profiles.get(firm_id)
 
-            pred_s = sign_from_cost_delta(c["simulated"], alpha)
-            comp_s = sign_from_cost_delta(c["direct"], alpha)
+            pred_s = predicted_margin_sign(c["simulated"], alpha, profile)
+            comp_s = predicted_margin_sign(c["direct"], alpha, profile)
 
-            match = "" if obs_s == 0 else str(int(pred_s == obs_s))
+            in_scope = int((obs_s in (-1, 1)) and (profile != "ip_licensing_dominated"))
+
+            match = ""
+            if in_scope == 1:
+                match = str(int(pred_s == obs_s))
 
             w.writerow(
                 [
                     firm_id,
+                    profile or "",
                     f"{c['direct']:.6f}",
                     f"{c['incoming']:.6f}",
                     f"{c['simulated']:.6f}",
@@ -153,6 +210,7 @@ def main() -> None:
                     comp_s,
                     obs_s,
                     match,
+                    in_scope,
                 ]
             )
 
