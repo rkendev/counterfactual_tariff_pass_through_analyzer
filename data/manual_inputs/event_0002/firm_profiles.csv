@@ -1,0 +1,6 @@
+event_id,firm_id,firm_profile,evidence_note
+event_0002,AAPL,manufacturing_cost_linked,hardware manufacturing and supply chain exposure
+event_0002,CSCO,manufacturing_cost_linked,network equipment supply chain exposure
+event_0002,HPQ,manufacturing_cost_linked,pc hardware manufacturing exposure
+event_0002,DELL,manufacturing_cost_linked,pc manufacturing and sourcing exposure
+event_0002,QCOM,ip_licensing_dominated,royalty and licensing driven margins dominate COGS pass through
