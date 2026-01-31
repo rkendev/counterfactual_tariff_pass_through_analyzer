@@ -1,5 +1,5 @@
 /*
-Simulated components for event_0002
+Simulated components for event_0003
 
 Outputs per firm components needed for Phase 3 mapping and comparator.
 direct_delta_usd comes from exposure shock mapping.
@@ -18,7 +18,7 @@ COPY (
   event_firms AS (
     SELECT firm_id
     FROM firm_event_exposure
-    WHERE event_id = 'event_0002'
+    WHERE event_id = 'event_0003'
   ),
   direct_delta AS (
     SELECT

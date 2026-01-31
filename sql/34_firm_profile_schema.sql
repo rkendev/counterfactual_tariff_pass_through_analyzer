@@ -1,5 +1,5 @@
 /*
-Phase 5: firm profile gating schema
+Phase 5+: firm profile gating schema
 
 Purpose
 Store a minimal per event per firm profile label that determines whether
@@ -8,6 +8,7 @@ cost delta to margin sign mapping is in scope for that firm.
 Profiles
 - manufacturing_cost_linked
 - ip_licensing_dominated
+- services_and_software_weighted
 
 Notes
 - Keep as TEXT with a CHECK constraint for simplicity and portability.
@@ -23,7 +24,7 @@ CREATE TABLE IF NOT EXISTS firm_profile (
   evidence_note TEXT NOT NULL,
   PRIMARY KEY (event_id, firm_id),
   CONSTRAINT firm_profile_allowed_values
-    CHECK (firm_profile IN ('manufacturing_cost_linked', 'ip_licensing_dominated'))
+    CHECK (firm_profile IN ('manufacturing_cost_linked', 'ip_licensing_dominated', 'services_and_software_weighted'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_firm_profile_event
