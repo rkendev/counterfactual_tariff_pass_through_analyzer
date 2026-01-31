@@ -1,0 +1,5 @@
+event_id,firm_id,firm_profile,evidence_note
+event_0003,AAPL,manufacturing_cost_linked,hardware manufacturing and global supply chain exposure
+event_0003,CSCO,services_and_software_weighted,increasing services and software mix reduces direct tariff pass-through
+event_0003,DELL,manufacturing_cost_linked,pc manufacturing and hardware sourcing exposure
+event_0003,HPQ,manufacturing_cost_linked,pc and printing hardware manufacturing exposure

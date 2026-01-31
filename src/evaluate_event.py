@@ -5,7 +5,7 @@ import csv
 from dataclasses import dataclass
 from pathlib import Path
 
-from mapping import predicted_margin_sign
+from mapping import predicted_margin_sign, _OUT_OF_SCOPE_PROFILES
 
 
 @dataclass(frozen=True)
@@ -117,7 +117,7 @@ def compute_metrics(
         _, sim_d, _, _, _, obs_s, profile = r
         if obs_s not in (-1, 1):
             return False
-        if profile == "ip_licensing_dominated":
+        if profile in _OUT_OF_SCOPE_PROFILES:
             return False
         return True
 
@@ -192,7 +192,7 @@ def main() -> None:
             pred_s = predicted_margin_sign(c["simulated"], alpha, profile)
             comp_s = predicted_margin_sign(c["direct"], alpha, profile)
 
-            in_scope = int((obs_s in (-1, 1)) and (profile != "ip_licensing_dominated"))
+            in_scope = int((obs_s in (-1, 1)) and (profile not in _OUT_OF_SCOPE_PROFILES))
 
             match = ""
             if in_scope == 1:

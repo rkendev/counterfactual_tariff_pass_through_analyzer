@@ -1,0 +1,5 @@
+event_id,firm_id,pre_period,post_period,gross_margin_pre,gross_margin_post
+event_0003,AAPL,2018Q2,2018Q3,0.383,0.383
+event_0003,CSCO,2018Q2,2018Q3,0.617,0.623
+event_0003,HPQ,2018Q2,2018Q3,0.182,0.176
+event_0003,DELL,2018Q2,2018Q3,0.267,0.264
