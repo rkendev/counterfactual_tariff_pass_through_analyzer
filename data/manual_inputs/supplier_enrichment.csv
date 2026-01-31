@@ -1,0 +1,10 @@
+buyer_firm_id,supplier_firm_id,evidence_note
+AAPL,FXCN,Foxconn manufactures iPhone iPad and Mac products for Apple per public filings and earnings disclosures 2017-2018
+AAPL,AVGO,Broadcom supplies wireless and networking chips to Apple per Broadcom 10-K and Apple supplier list
+CSCO,FXCN,Foxconn manufactures router and switch hardware for Cisco per Cisco supply chain disclosures
+DELL,FXCN,Foxconn manufactures server and PC hardware for Dell per public filings
+DELL,AVGO,Broadcom supplies networking and storage controller chips to Dell per Broadcom customer disclosures
+DELL,INTC,Intel supplies processors for Dell PCs and servers per Intel 10-K major customer disclosures
+HPQ,FXCN,Foxconn manufactures PC and printer hardware for HP per HP supply chain reports
+HPQ,AVGO,Broadcom supplies networking chips to HP per Broadcom customer disclosures
+HPQ,INTC,Intel supplies processors for HP PCs and servers per Intel 10-K major customer disclosures

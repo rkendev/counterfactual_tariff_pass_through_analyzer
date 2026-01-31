@@ -1,16 +1,21 @@
 /*
 Simulated components for event_0002
 
-Outputs per firm components needed for Phase 3 mapping and comparator.
-direct_delta_usd comes from exposure shock mapping.
-incoming_delta_usd comes from network propagation.
-simulated_delta_usd is the sum.
+Phase 7: corrected propagation direction.
 
-This keeps propagation mechanics unchanged.
+Cost deltas now flow DOWNSTREAM from supplier to buyer,
+matching the structural hypothesis of recursive landed-cost propagation.
 
-Note:
-This is a wiring test. It still uses the synthetic HS_A shock mapping.
-Real HS scope and real exposure mapping will replace this later.
+Seeds include ALL firms with HS_A exposure in the graph, not just event firms.
+This allows supplier firms to propagate cost shocks to event firm buyers.
+
+Output is filtered to event firms only.
+
+Changes from Phase 6:
+- Uses supplier_edges instead of phase1_edges
+- Walk direction reversed: supplier_firm_id -> buyer_firm_id
+- Out-degree computed per supplier (number of buyers)
+- Seeds expanded to all firms with HS_A exposure
 */
 
 COPY (
@@ -30,16 +35,20 @@ COPY (
         END
       ) AS direct_delta_usd
     FROM firm_hs_exposure e
-    JOIN event_firms ef ON ef.firm_id = e.firm_id
     GROUP BY e.firm_id
-
+    HAVING SUM(
+      CASE
+        WHEN e.hs_code = 'HS_A' THEN e.import_value_usd * 0.25
+        ELSE 0
+      END
+    ) <> 0
   ),
   out_degree AS (
     SELECT
-      buyer_firm_id AS firm_id,
+      supplier_firm_id AS firm_id,
       COUNT(*)::numeric AS out_deg
-    FROM phase1_edges
-    GROUP BY buyer_firm_id
+    FROM supplier_edges
+    GROUP BY supplier_firm_id
   ),
   seeds AS (
     SELECT
@@ -56,7 +65,7 @@ COPY (
         s.path_root_firm_id,
         s.current_node_id,
         s.current_node_id AS from_firm_id,
-        NULL::text AS to_supplier_id,
+        NULL::text AS to_buyer_id,
         s.depth,
         s.delta_usd AS propagated_delta_usd
       FROM seeds s
@@ -65,13 +74,13 @@ COPY (
 
       SELECT
         w.path_root_firm_id,
-        e.supplier_firm_id AS current_node_id,
+        e.buyer_firm_id AS current_node_id,
         w.current_node_id AS from_firm_id,
-        e.supplier_firm_id AS to_supplier_id,
+        e.buyer_firm_id AS to_buyer_id,
         w.depth + 1 AS depth,
         (w.propagated_delta_usd / od.out_deg) AS propagated_delta_usd
       FROM w
-      JOIN phase1_edges e ON e.buyer_firm_id = w.current_node_id
+      JOIN supplier_edges e ON e.supplier_firm_id = w.current_node_id
       JOIN out_degree od ON od.firm_id = w.current_node_id
       WHERE w.depth < 4
     )
@@ -79,11 +88,11 @@ COPY (
   ),
   incoming AS (
     SELECT
-      to_supplier_id AS firm_id,
+      to_buyer_id AS firm_id,
       SUM(propagated_delta_usd) AS incoming_delta_usd
     FROM walk
-    WHERE depth >= 1 AND to_supplier_id IS NOT NULL
-    GROUP BY to_supplier_id
+    WHERE depth >= 1 AND to_buyer_id IS NOT NULL
+    GROUP BY to_buyer_id
   )
   SELECT
     ef.firm_id,
